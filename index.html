@@ -1,0 +1,69 @@
+<html>
+	<head>
+		<script src="https://aframe.io/releases/0.7.0/aframe.min.js"></script>
+		<script src="https://sdk.altvr.com/libs/altspace.js/2.9.0/altspace.min.js"></script>	
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-firestore.js"></script>
+		<script>
+  			// Initialize Firebase
+  			firebase.initializeApp({
+  				apiKey: 'AIzaSyCJ4q5Ik4d5VVwg5mVo6V7KztjKHhTX4RM',
+  				authDomain: 'homespace-1ff48.firebaseapp.com',
+  				projectId: 'homespace-1ff48'
+			});
+			// Initialize Cloud Firestore through Firebase
+			var db = firebase.firestore();
+		</script>
+		<script>
+			AFRAME.registerComponent("lights", {
+				schema: {},
+				init: function() {
+					var el = this.el;
+      				var darkPlane = document.getElementById("dark");
+      				var darkness = 0;
+      				var darkRef = db.collection("dark-plane").doc("darkness");
+      				var darkRefData;
+      				darkRef.set({
+      					opacity: darkness
+      				})
+      				.then(function(){
+      					console.log("'Darkness' set successfully!");
+      				})
+      				.catch(function(error){
+      					console.log("Error: " + error);
+      				})
+      				realtimeUpdate = function(){
+      							darkRef.onSnapshot(function(doc){
+      							darkRefData = doc.data();
+      							darkPlane.setAttribute("material", "opacity", darkRefData.opacity);
+      							});
+      				}
+      				this.el.addEventListener("click", function(){
+      					if (darkness == 0) {
+      						darkness = 0.99;
+      						return darkRef.update({
+      							opacity: darkness
+      						});
+      					} else if (darkness == 0.99){
+      						darkness = 0;
+      						return darkRef.update({
+      							opacity: darkness
+      						});      						
+      					}
+
+      				});
+      				realtimeUpdate();
+				},
+				tick: function() {
+
+				}
+			})
+		</script>
+	</head>
+	<body>
+		<a-scene altspace="fullspace: true" sync-system="author: winrar; app: homespacetest">
+			<a-plane id="dark" n-skeleton-parent="part: head;" position="0 0 -0.2" scale="0.54 0.5" material="color: black; transparent: true; opacity: 0; side:front">
+			<a-box id="light-switch" lights scale="2 2 2"></a-box>
+		</a-scene>
+	</body>
+</html>
